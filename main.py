@@ -79,7 +79,9 @@ def home_page():
                                 ## 🚀 工具箱特色
                                 ✨ ​**持续更新** - 边学边构建，保持功能迭代  
                                 🛠️ ​**实用工具** - 聚焦开发实用功能  
-                                🧩 ​**模块设计** - 功能相互独立，按需使用
+                                🧩 ​**模块设计** - 功能相互独立，按需使用  
+                                🎉 ​**来访人次** 
+                                ![learntoolweb](https://count.getloli.com/@learntoolweb?name=learntoolweb&theme=booru-lewd&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
                             ''').classes("text-lg text-gray-700")
 
                             ui.separator().classes("my-4")
@@ -97,6 +99,7 @@ def home_page():
                                     ui.markdown('''
                                         - 密评分数计算器  
                                         - 证书链验证
+                                        - 抓包文件分析
                                     ''')
 
                     # 右侧侧边区
@@ -109,8 +112,8 @@ def home_page():
                             with ui.row().classes("items-center gap-4"):
                                 ui.image("/static/avatar.jpg").classes("rounded-full")
                                 with ui.column():
-                                    ui.label("Draina").classes("font-bold")
-                                    ui.markdown("密评工程师 | 编程爱好者").classes("text-sm text-gray-600")
+                                    ui.label("Draina").classes("font-bold text-3xl")
+                                    ui.markdown("密评工程师 | 编程爱好者 | FPS苦手").classes("text-sm text-gray-600")
                             ui.separator().classes("my-3")
                             with ui.column().classes("space-y-1 text-sm"):
                                 ui.html('''
