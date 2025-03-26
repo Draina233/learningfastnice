@@ -4,6 +4,11 @@ import base64
 
 from nicegui.tailwind_types import content
 
+from nicegui import app
+
+# 添加静态文件目录（通常默认已配置）
+app.add_static_files('/static', 'static')
+
 # 创建FastAPI应用
 fastapi_app = FastAPI()
 
@@ -102,17 +107,36 @@ def home_page():
                         with ui.card().classes("p-4 shadow-lg rounded-xl bg-purple-50"):
                             ui.label("💻 开发者信息").classes("text-xl font-bold text-purple-800 mb-3")
                             with ui.row().classes("items-center gap-4"):
-                                ui.image("https://images.cnblogs.com/cnblogs_com/blogs/831993/galleries/2423491/o_240927082711_822965d76109d493feba06a0fe8f13d.jpg").classes("rounded-full")
+                                ui.image("/static/avatar.jpg").classes("rounded-full")
                                 with ui.column():
                                     ui.label("Draina").classes("font-bold")
                                     ui.markdown("密评工程师 | 编程爱好者").classes("text-sm text-gray-600")
                             ui.separator().classes("my-3")
                             with ui.column().classes("space-y-1 text-sm"):
-                                ui.markdown('''
-                                            📧 ​**邮箱**:    draina@qq.com  
-                                            🖊  ​**Blogs**:  [Draina](https://www.cnblogs.com/Draina)  
-                                            🐈 ​**GitHub**: [Draina233](https://github.com/Draina233)  
-                                ''')
+                                ui.html('''
+                                        <div class="flex flex-col gap-1">
+                                            <div class="flex items-center">
+                                                <span class="w-[32px]">🐈</span>
+                                                <span class="w-16 font-medium pr-2">GitHub:</span>
+                                                <a href="https://github.com/Draina233" target="_blank">Draina233</a>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="w-[32px]">🖊</span>
+                                                <span class="w-16 font-medium pr-2">Blogs:</span>
+                                                <a href="https://www.cnblogs.com/Draina" target="_blank">Draina</a>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="w-[32px]">📺</span>
+                                                <span class="w-16 font-medium pr-2">BiliBili:</span>
+                                                <a href="https://space.bilibili.com/290793235" target="_blank">Draina</a>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="w-[32px]">📧</span>
+                                                <span class="w-16 font-medium pr-2">邮箱:</span>
+                                                <span>draina@qq.com</span>
+                                            </div>
+                                        </div>
+                                    ''')
                 # 页脚
                 ui.separator().classes("mt-8")
                 ui.label("© 2024 Draina's Toolbox | GPL-3.0 license").classes("text-center text-gray-500 text-sm py-2")
