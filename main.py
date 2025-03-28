@@ -131,11 +131,6 @@ def home_page():
                                                 <a href="https://www.cnblogs.com/Draina" target="_blank">Draina</a>
                                             </div>
                                             <div class="flex items-center">
-                                                <span class="w-[32px]">📺</span>
-                                                <span class="w-16 font-medium pr-2">BiliBili:</span>
-                                                <a href="https://space.bilibili.com/290793235" target="_blank">Draina</a>
-                                            </div>
-                                            <div class="flex items-center">
                                                 <span class="w-[32px]">📧</span>
                                                 <span class="w-16 font-medium pr-2">邮箱:</span>
                                                 <span>draina@qq.com</span>
@@ -155,7 +150,7 @@ def converter_page():
     with ui.row().classes("w-full") as page_container:
         # 内容区域
         with ui.column().style(CONTENT_STYLE).classes("w-full") as content:
-            ui.page_title("编码转换工具")
+            ui.page_title("编码转换工具-Draina's Toolbox")
 
             with ui.column().classes("w-full p-4"):
                 ui.label("多格式编码转换工具").classes("text-2xl font-bold mb-4 text-primary")
@@ -295,236 +290,472 @@ def converter_page():
 
 @ui.page('/score')
 def score_page():
-    with ui.row().classes("w-full") as page_container:
+    with ui.row().classes("w-full max-w-6xl mx-auto p-4") as page_container:
         # 内容区域
-        with ui.column().style(CONTENT_STYLE).classes("w-full") as content:
-            ui.page_title("密评分数计算器")
+        with ui.column().style(CONTENT_STYLE).classes("w-full space-y-6"):
+            # 修正页面标题（单独设置页面标题和显示标题）
+            ui.page_title("密评分数计算器-Draina's Toolbox")  # 这个设置浏览器标签页标题
+            ui.label("密评分数计算器").classes("text-2xl font-bold text-gray-800")  # 这是页面显示的标题
 
             # 系统等级切换
-            with ui.row().classes("mb-4"):
-                level_radio = ui.radio(['二级系统', '三级系统'], value='三级系统', on_change=lambda e: update_ui(e.value))
+            with ui.row().classes("w-full bg-gray-100 rounded-lg p-4"):
+                level_radio = ui.radio(['二级系统', '三级系统'], value='三级系统', on_change=lambda e: update_ui(e.value))\
+                    .props("inline color=teal").classes("space-x-6")
 
             # 各层分数计算区域
-            with ui.card().classes("w-full p-4"):
+            with ui.card().classes("w-full p-6 rounded-xl shadow-lg space-y-8"):
                 # 物理层
-                with ui.column().classes("mb-4"):
-                    ui.label("物理和环境安全").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        physical_check1 = ui.checkbox("（宜）身份鉴别")
+                with ui.column().classes("space-y-3 border-l-4 border-blue-500 pl-4"):
+                    ui.label("物理和环境安全").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        physical_check1 = ui.checkbox("（应）身份鉴别").props("color=teal dense").classes("mr-2")
                         physical_check1.set_value(True)
-                        physical_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        physical_check2 = ui.checkbox("（宜）电子门禁记录数据存储完整性")
+                        physical_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        physical_check2 = ui.checkbox("（宜）电子门禁记录数据存储完整性").props(
+                            "color=teal dense").classes("mr-2")
                         physical_check2.set_value(True)
-                        physical_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        physical_check3 = ui.checkbox("（宜）视频记录数据存储完整性")
+                        physical_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        physical_check3 = ui.checkbox("（宜）视频记录数据存储完整性").props("color=teal dense").classes(
+                            "mr-2")
                         physical_check3.set_value(True)
-                        physical_input3 = ui.input().props("type=number").classes("w-24 ml-2")
+                        physical_input3 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 网络层
-                with ui.column().classes("mb-4"):
-                    ui.label("网络和通信安全").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        network_check1 = ui.checkbox("（应）身份鉴别")
+                with ui.column().classes("space-y-3 border-l-4 border-green-500 pl-4"):
+                    ui.label("网络和通信安全").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        network_check1 = ui.checkbox("（应）身份鉴别").props("color=teal dense").classes("mr-2")
                         network_check1.set_value(True)
-                        network_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        network_check2 = ui.checkbox("（宜）通信数据完整性")
+                        network_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        network_check2 = ui.checkbox("（宜）通信数据完整性").props("color=teal dense").classes("mr-2")
                         network_check2.set_value(True)
-                        network_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        network_check3 = ui.checkbox("（应）通信过程重要数据机密性")
+                        network_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        network_check3 = ui.checkbox("（应）通信过程重要数据机密性").props("color=teal dense").classes(
+                            "mr-2")
                         network_check3.set_value(True)
-                        network_input3 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        network_check4 = ui.checkbox("（宜）网络边界访问控制信息完整性")
+                        network_input3 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        network_check4 = ui.checkbox("（宜）网络边界访问控制信息完整性").props(
+                            "color=teal dense").classes("mr-2")
                         network_check4.set_value(True)
-                        network_input4 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        network_check5 = ui.checkbox("（可）安全接入认证")
-                        network_input5 = ui.input().props("type=number").classes("w-24 ml-2")
+                        network_input4 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        network_check5 = ui.checkbox("（可）安全接入认证").props("color=teal dense").classes("mr-2")
+                        network_input5 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 设备层
-                with ui.column().classes("mb-4"):
-                    ui.label("设备和计算安全").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        device_check1 = ui.checkbox("（应）身份鉴别")
+                with ui.column().classes("space-y-3 border-l-4 border-purple-500 pl-4"):
+                    ui.label("设备和计算安全").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        device_check1 = ui.checkbox("（应）身份鉴别").props("color=teal dense").classes("mr-2")
                         device_check1.set_value(True)
-                        device_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        device_check2 = ui.checkbox("（应）远程管理通道安全")
+                        device_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        device_check2 = ui.checkbox("（应）远程管理通道安全").props("color=teal dense").classes("mr-2")
                         device_check2.set_value(True)
-                        device_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        device_check3 = ui.checkbox("（宜）系统资源访问控制信息完整性")
+                        device_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        device_check3 = ui.checkbox("（宜）系统资源访问控制信息完整性").props("color=teal dense").classes(
+                            "mr-2")
                         device_check3.set_value(True)
-                        device_input3 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        device_check4 = ui.checkbox("（宜）重要信息资源安全标记完整性")
+                        device_input3 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        device_check4 = ui.checkbox("（宜）重要信息资源安全标记完整性").props("color=teal dense").classes(
+                            "mr-2")
                         device_check4.set_value(True)
-                        device_input4 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        device_check5 = ui.checkbox("（宜）日志记录完整性")
+                        device_input4 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        device_check5 = ui.checkbox("（宜）日志记录完整性").props("color=teal dense").classes("mr-2")
                         device_check5.set_value(True)
-                        device_input5 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        device_check6 = ui.checkbox("（宜）重要可执行程序完整性、重要可执行程序来源真实性")
+                        device_input5 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        device_check6 = ui.checkbox("（宜）重要可执行程序完整性、重要可执行程序来源真实性").props(
+                            "color=teal dense").classes("mr-2")
                         device_check6.set_value(True)
-                        device_input6 = ui.input().props("type=number").classes("w-24 ml-2")
+                        device_input6 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 应用层
-                with ui.column().classes("mb-4"):
-                    ui.label("应用和数据安全").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check1 = ui.checkbox("（应）身份鉴别")
+                with ui.column().classes("space-y-3 border-l-4 border-orange-500 pl-4"):
+                    ui.label("应用和数据安全").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check1 = ui.checkbox("（应）身份鉴别").props("color=teal dense").classes("mr-2")
                         app_check1.set_value(True)
-                        app_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check2 = ui.checkbox("（宜）访问控制信息完整性")
+                        app_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check2 = ui.checkbox("（宜）访问控制信息完整性").props("color=teal dense").classes("mr-2")
                         app_check2.set_value(True)
-                        app_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check3 = ui.checkbox("（宜）重要信息资源安全标记完整性")
+                        app_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check3 = ui.checkbox("（宜）重要信息资源安全标记完整性").props("color=teal dense").classes(
+                            "mr-2")
                         app_check3.set_value(True)
-                        app_input3 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check4 = ui.checkbox("（应）重要数据传输机密性")
+                        app_input3 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check4 = ui.checkbox("（应）重要数据传输机密性").props("color=teal dense").classes("mr-2")
                         app_check4.set_value(True)
-                        app_input4 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check5 = ui.checkbox("（应）重要数据存储机密性")
+                        app_input4 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check5 = ui.checkbox("（应）重要数据存储机密性").props("color=teal dense").classes("mr-2")
                         app_check5.set_value(True)
-                        app_input5 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check6 = ui.checkbox("（宜）重要数据传输完整性")
+                        app_input5 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check6 = ui.checkbox("（宜）重要数据传输完整性").props("color=teal dense").classes("mr-2")
                         app_check6.set_value(True)
-                        app_input6 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check7 = ui.checkbox("（宜）重要数据存储完整性")
+                        app_input6 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check7 = ui.checkbox("（宜）重要数据存储完整性").props("color=teal dense").classes("mr-2")
                         app_check7.set_value(True)
-                        app_input7 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        app_check8 = ui.checkbox("（宜）不可否认性")
-                        app_input8 = ui.input().props("type=number").classes("w-24 ml-2")
+                        app_input7 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        app_check8 = ui.checkbox("（宜）不可否认性").props("color=teal dense").classes("mr-2")
+                        app_input8 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 管理制度
-                with ui.column().classes("mb-4"):
-                    ui.label("管理制度").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        manage_check1 = ui.checkbox("（应）具备密码应用安全管理制度")
+                with ui.column().classes("space-y-3 border-l-4 border-pink-500 pl-4"):
+                    ui.label("管理制度").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        manage_check1 = ui.checkbox("（应）具备密码应用安全管理制度").props("color=teal dense").classes(
+                            "mr-2")
                         manage_check1.set_value(True)
-                        manage_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        manage_check2 = ui.checkbox("（应）密钥管理规则")
+                        manage_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        manage_check2 = ui.checkbox("（应）密钥管理规则").props("color=teal dense").classes("mr-2")
                         manage_check2.set_value(True)
-                        manage_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        manage_check3 = ui.checkbox("（应）建立操作规程")
+                        manage_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        manage_check3 = ui.checkbox("（应）建立操作规程").props("color=teal dense").classes("mr-2")
                         manage_check3.set_value(True)
-                        manage_input3 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        manage_check4 = ui.checkbox("（应）定期修订安全管理制度")
+                        manage_input3 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        manage_check4 = ui.checkbox("（应）定期修订安全管理制度").props("color=teal dense").classes(
+                            "mr-2")
                         manage_check4.set_value(True)
-                        manage_input4 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        manage_check5 = ui.checkbox("（应）明确管理制度发布流程")
+                        manage_input4 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        manage_check5 = ui.checkbox("（应）明确管理制度发布流程").props("color=teal dense").classes(
+                            "mr-2")
                         manage_check5.set_value(True)
-                        manage_input5 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        manage_check6 = ui.checkbox("（应）制度执行过程记录留存")
+                        manage_input5 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        manage_check6 = ui.checkbox("（应）制度执行过程记录留存").props("color=teal dense").classes(
+                            "mr-2")
                         manage_check6.set_value(True)
-                        manage_input6 = ui.input().props("type=number").classes("w-24 ml-2")
+                        manage_input6 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 人员管理
-                with ui.column().classes("mb-4"):
-                    ui.label("人员管理").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        personnel_check1 = ui.checkbox("（应）了解并遵守相关法律制度")
+                with ui.column().classes("space-y-3 border-l-4 border-indigo-500 pl-4"):
+                    ui.label("人员管理").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        personnel_check1 = ui.checkbox("（应）了解并遵守相关法律制度").props("color=teal dense").classes(
+                            "mr-2")
                         personnel_check1.set_value(True)
-                        personnel_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        personnel_check2 = ui.checkbox("（应）建立岗位责任制度")
+                        personnel_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        personnel_check2 = ui.checkbox("（应）建立岗位责任制度").props("color=teal dense").classes("mr-2")
                         personnel_check2.set_value(True)
-                        personnel_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        personnel_check3 = ui.checkbox("（应）建立上岗人员培训制度")
+                        personnel_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        personnel_check3 = ui.checkbox("（应）建立上岗人员培训制度").props("color=teal dense").classes(
+                            "mr-2")
                         personnel_check3.set_value(True)
-                        personnel_input3 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        personnel_check4 = ui.checkbox("（应）定期进行安全岗位人员考核")
+                        personnel_input3 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        personnel_check4 = ui.checkbox("（应）定期进行安全岗位人员考核").props(
+                            "color=teal dense").classes("mr-2")
                         personnel_check4.set_value(True)
-                        personnel_input4 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        personnel_check5 = ui.checkbox("（应）建立保密制度和调离制度")
+                        personnel_input4 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        personnel_check5 = ui.checkbox("（应）建立保密制度和调离制度").props("color=teal dense").classes(
+                            "mr-2")
                         personnel_check5.set_value(True)
-                        personnel_input5 = ui.input().props("type=number").classes("w-24 ml-2")
+                        personnel_input5 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 建设运行
-                with ui.column().classes("mb-4"):
-                    ui.label("建设运行").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        construct_check1 = ui.checkbox("（应）制定密码应用方案")
+                with ui.column().classes("space-y-3 border-l-4 border-cyan-500 pl-4"):
+                    ui.label("建设运行").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        construct_check1 = ui.checkbox("（应）制定密码应用方案").props("color=teal dense").classes("mr-2")
                         construct_check1.set_value(True)
-                        construct_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        construct_check2 = ui.checkbox("（应）制定密钥安全管理策略")
+                        construct_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        construct_check2 = ui.checkbox("（应）制定密钥安全管理策略").props("color=teal dense").classes(
+                            "mr-2")
                         construct_check2.set_value(True)
-                        construct_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        construct_check3 = ui.checkbox("（应）制定实施方案")
+                        construct_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        construct_check3 = ui.checkbox("（应）制定实施方案").props("color=teal dense").classes("mr-2")
                         construct_check3.set_value(True)
-                        construct_input3 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        construct_check4 = ui.checkbox("（应）投入运行前进行密评")
+                        construct_input3 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        construct_check4 = ui.checkbox("（应）投入运行前进行密评").props("color=teal dense").classes(
+                            "mr-2")
                         construct_check4.set_value(True)
-                        construct_input4 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        construct_check5 = ui.checkbox("（应）定期密评与攻防演习")
+                        construct_input4 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        construct_check5 = ui.checkbox("（应）定期密评与攻防演习").props("color=teal dense").classes(
+                            "mr-2")
                         construct_check5.set_value(True)
-                        construct_input5 = ui.input().props("type=number").classes("w-24 ml-2")
+                        construct_input5 = ui.input().props("type=number dense outlined").classes("w-32")
 
                 # 应急处置
-                with ui.column().classes("mb-4"):
-                    ui.label("应急处置").classes("font-bold mb-2")
-                    with ui.row().classes("items-center mb-2"):
-                        emergency_check1 = ui.checkbox("（应）应急策略")
+                with ui.column().classes("space-y-3 border-l-4 border-red-500 pl-4"):
+                    ui.label("应急处置").classes("text-lg font-semibold text-gray-700")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        emergency_check1 = ui.checkbox("（应）应急策略").props("color=teal dense").classes("mr-2")
                         emergency_check1.set_value(True)
-                        emergency_input1 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        emergency_check2 = ui.checkbox("（应）事件处置")
+                        emergency_input1 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        emergency_check2 = ui.checkbox("（应）事件处置").props("color=teal dense").classes("mr-2")
                         emergency_check2.set_value(True)
-                        emergency_input2 = ui.input().props("type=number").classes("w-24 ml-2")
-                    with ui.row().classes("items-center mb-2"):
-                        emergency_check3 = ui.checkbox("（应）向有关部门上报处置情况")
+                        emergency_input2 = ui.input().props("type=number dense outlined").classes("w-32")
+                    with ui.row().classes("items-center space-x-4 group"):
+                        emergency_check3 = ui.checkbox("（应）向有关部门上报处置情况").props("color=teal dense").classes(
+                            "mr-2")
                         emergency_check3.set_value(True)
-                        emergency_input3 = ui.input().props("type=number").classes("w-24 ml-2")
+                        emergency_input3 = ui.input().props("type=number dense outlined").classes("w-32")
 
-            # 计算按钮
-            with ui.row().classes("justify-center mb-4"):
-                calculate_btn = ui.button("开始计算", on_click=lambda: calculate_score())
+            # 计算分数函数
+            def calculate_score():
+                try:
+                    # 物理层计算
+                    physical_score = 0
+                    physical_weight = 0
+                    if physical_check1.value and physical_input1.value:
+                        physical_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        physical_score += float(physical_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if physical_check2.value and physical_input2.value:
+                        physical_weight += 0.4 if level_radio.value == '二级系统' else 0.7
+                        physical_score += float(physical_input2.value) * (
+                            0.4 if level_radio.value == '二级系统' else 0.7)
+                    if physical_check3.value and physical_input3.value and level_radio.value == '三级系统':
+                        physical_weight += 0.7
+                        physical_score += float(physical_input3.value) * 0.7
+                    physical_result.set_text(
+                        f"物理层：{round(physical_score / physical_weight, 4) if physical_weight > 0 else '不适用'}")
 
-            # 结果显示
-            with ui.card().classes("w-full p-4"):
-                with ui.column().classes("space-y-2"):
-                    ui.label("各层得分").classes("font-bold mb-2")
-                    physical_result = ui.label("物理层：尚无结果")
-                    network_result = ui.label("网络层：尚无结果")
-                    device_result = ui.label("设备层：尚无结果")
-                    app_result = ui.label("应用层：尚无结果")
-                    manage_result = ui.label("管理制度：尚无结果")
-                    personnel_result = ui.label("人员管理：尚无结果")
-                    construct_result = ui.label("建设运行：尚无结果")
-                    emergency_result = ui.label("应急处置：尚无结果")
-                    total_result = ui.label("总分：尚无结果")
+                    # 网络层计算
+                    network_score = 0
+                    network_weight = 0
+                    if network_check1.value and network_input1.value:
+                        network_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        network_score += float(network_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if network_check2.value and network_input2.value:
+                        network_weight += 0.4 if level_radio.value == '二级系统' else 0.7
+                        network_score += float(network_input2.value) * (0.4 if level_radio.value == '二级系统' else 0.7)
+                    if network_check3.value and network_input3.value:
+                        network_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        network_score += float(network_input3.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if network_check4.value and network_input4.value:
+                        network_weight += 0.4 if level_radio.value == '二级系统' else 0.4
+                        network_score += float(network_input4.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
+                    if network_check5.value and network_input5.value and level_radio.value == '三级系统':
+                        network_weight += 0.4
+                        network_score += float(network_input5.value) * 0.4
+                    network_result.set_text(
+                        f"网络层：{round(network_score / network_weight, 4) if network_weight > 0 else '不适用'}")
 
-            # 说明
-            ui.label("注意：本工具计算分数仅用于辅助参考，最终分数以实际手动验算结果为准！").classes("text-sm text-gray-500 mt-4")
-            ui.label("说明：").classes("text-sm text-gray-500")
-            ui.label("1、若显示参数错误，请检查是否勾选了不适用项").classes("text-sm text-gray-500")
-            ui.label("2、仔细核实勾选适用项，未勾选的项目不参与计算").classes("text-sm text-gray-500")
-            ui.label("3、核实项目安全等级，若为二级系统不要忘记切换").classes("text-sm text-gray-500")
-            ui.label("4、本计算工具基于商用密码应用安全性评估量化评估规则（2023版）文件算法具有时效性！").classes("text-sm text-gray-500")
+                    # 设备层计算
+                    device_score = 0
+                    device_weight = 0
+                    if device_check1.value and device_input1.value:
+                        device_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        device_score += float(device_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if device_check2.value and device_input2.value and level_radio.value == '三级系统':
+                        device_weight += 1
+                        device_score += float(device_input2.value) * 1
+                    if device_check3.value and device_input3.value:
+                        device_weight += 0.4 if level_radio.value == '二级系统' else 0.4
+                        device_score += float(device_input3.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
+                    if device_check4.value and device_input4.value and level_radio.value == '三级系统':
+                        device_weight += 0.4
+                        device_score += float(device_input4.value) * 0.4
+                    if device_check5.value and device_input5.value:
+                        device_weight += 0.4 if level_radio.value == '二级系统' else 0.4
+                        device_score += float(device_input5.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
+                    if device_check6.value and device_input6.value and level_radio.value == '三级系统':
+                        device_weight += 0.7
+                        device_score += float(device_input6.value) * 0.7
+                    device_result.set_text(
+                        f"设备层：{round(device_score / device_weight, 4) if device_weight > 0 else '不适用'}")
+
+                    # 应用层计算
+                    app_score = 0
+                    app_weight = 0
+                    if app_check1.value and app_input1.value:
+                        app_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        app_score += float(app_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if app_check2.value and app_input2.value:
+                        app_weight += 0.4 if level_radio.value == '二级系统' else 0.4
+                        app_score += float(app_input2.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
+                    if app_check3.value and app_input3.value and level_radio.value == '三级系统':
+                        app_weight += 0.4
+                        app_score += float(app_input3.value) * 0.4
+                    if app_check4.value and app_input4.value:
+                        app_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        app_score += float(app_input4.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if app_check5.value and app_input5.value:
+                        app_weight += 0.7 if level_radio.value == '二级系统' else 1
+                        app_score += float(app_input5.value) * (0.7 if level_radio.value == '二级系统' else 1)
+                    if app_check6.value and app_input6.value:
+                        app_weight += 0.7 if level_radio.value == '二级系统' else 0.7
+                        app_score += float(app_input6.value) * (0.7 if level_radio.value == '二级系统' else 0.7)
+                    if app_check7.value and app_input7.value:
+                        app_weight += 0.7 if level_radio.value == '二级系统' else 0.7
+                        app_score += float(app_input7.value) * (0.7 if level_radio.value == '二级系统' else 0.7)
+                    if app_check8.value and app_input8.value and level_radio.value == '三级系统':
+                        app_weight += 1
+                        app_score += float(app_input8.value) * 1
+                    app_result.set_text(f"应用层：{round(app_score / app_weight, 4) if app_weight > 0 else '不适用'}")
+
+                    # 管理制度计算
+                    manage_score = 0
+                    manage_weight = 0
+                    if manage_check1.value and manage_input1.value:
+                        manage_weight += 1
+                        manage_score += float(manage_input1.value) * 1
+                    if manage_check2.value and manage_input2.value:
+                        manage_weight += 0.7
+                        manage_score += float(manage_input2.value) * 0.7
+                    if manage_check3.value and manage_input3.value:
+                        manage_weight += 0.7
+                        manage_score += float(manage_input3.value) * 0.7
+                    if manage_check4.value and manage_input4.value and level_radio.value == '三级系统':
+                        manage_weight += 0.7
+                        manage_score += float(manage_input4.value) * 0.7
+                    if manage_check5.value and manage_input5.value and level_radio.value == '三级系统':
+                        manage_weight += 0.7
+                        manage_score += float(manage_input5.value) * 0.7
+                    if manage_check6.value and manage_input6.value and level_radio.value == '三级系统':
+                        manage_weight += 0.7
+                        manage_score += float(manage_input6.value) * 0.7
+                    manage_result.set_text(
+                        f"管理制度：{round(manage_score / manage_weight, 4) if manage_weight > 0 else '不适用'}")
+
+                    # 人员管理计算
+                    personnel_score = 0
+                    personnel_weight = 0
+                    if personnel_check1.value and personnel_input1.value:
+                        personnel_weight += 0.7
+                        personnel_score += float(personnel_input1.value) * 0.7
+                    if personnel_check2.value and personnel_input2.value:
+                        personnel_weight += 1
+                        personnel_score += float(personnel_input2.value) * 1
+                    if personnel_check3.value and personnel_input3.value:
+                        personnel_weight += 0.7
+                        personnel_score += float(personnel_input3.value) * 0.7
+                    if personnel_check4.value and personnel_input4.value and level_radio.value == '三级系统':
+                        personnel_weight += 0.7
+                        personnel_score += float(personnel_input4.value) * 0.7
+                    if personnel_check5.value and personnel_input5.value:
+                        personnel_weight += 0.7
+                        personnel_score += float(personnel_input5.value) * 0.7
+                    personnel_result.set_text(
+                        f"人员管理：{round(personnel_score / personnel_weight, 4) if personnel_weight > 0 else '不适用'}")
+
+                    # 建设运行计算
+                    construct_score = 0
+                    construct_weight = 0
+                    if construct_check1.value and construct_input1.value:
+                        construct_weight += 1
+                        construct_score += float(construct_input1.value) * 1
+                    if construct_check2.value and construct_input2.value:
+                        construct_weight += 1
+                        construct_score += float(construct_input2.value) * 1
+                    if construct_check3.value and construct_input3.value:
+                        construct_weight += 0.7
+                        construct_score += float(construct_input3.value) * 0.7
+                    if construct_check4.value and construct_input4.value:
+                        construct_weight += 1
+                        construct_score += float(construct_input4.value) * 1
+                    if construct_check5.value and construct_input5.value and level_radio.value == '三级系统':
+                        construct_weight += 0.7
+                        construct_score += float(construct_input5.value) * 0.7
+                    construct_result.set_text(
+                        f"建设运行：{round(construct_score / construct_weight, 4) if construct_weight > 0 else '不适用'}")
+
+                    # 应急处置计算
+                    emergency_score = 0
+                    emergency_weight = 0
+                    if emergency_check1.value and emergency_input1.value:
+                        emergency_weight += 1
+                        emergency_score += float(emergency_input1.value) * 1
+                    if emergency_check2.value and emergency_input2.value and level_radio.value == '三级系统':
+                        emergency_weight += 0.7
+                        emergency_score += float(emergency_input2.value) * 0.7
+                    if emergency_check3.value and emergency_input3.value and level_radio.value == '三级系统':
+                        emergency_weight += 0.7
+                        emergency_score += float(emergency_input3.value) * 0.7
+                    emergency_result.set_text(
+                        f"应急处置：{round(emergency_score / emergency_weight, 4) if emergency_weight > 0 else '不适用'}")
+
+                    # 总分计算
+                    total_technical = 0
+                    total_management = 0
+                    total_weight_tech = 0
+                    total_weight_mang = 0
+                    if physical_result.text != '物理层：不适用':
+                        total_technical += float(physical_result.text.split('：')[-1]) * 10
+                        total_weight_tech += 10
+                    if network_result.text != '网络层：不适用':
+                        total_technical += float(network_result.text.split('：')[-1]) * 20
+                        total_weight_tech += 20
+                    if device_result.text != '设备层：不适用':
+                        total_technical += float(device_result.text.split('：')[-1]) * 10
+                        total_weight_tech += 10
+                    if app_result.text != '应用层：不适用':
+                        total_technical += float(app_result.text.split('：')[-1]) * 30
+                        total_weight_tech += 30
+                    if manage_result.text != '管理制度：不适用':
+                        total_management += float(manage_result.text.split('：')[-1]) * 8
+                        total_weight_mang += 8
+                    if personnel_result.text != '人员管理：不适用':
+                        total_management += float(personnel_result.text.split('：')[-1]) * 8
+                        total_weight_mang += 8
+                    if construct_result.text != '建设运行：不适用':
+                        total_management += float(construct_result.text.split('：')[-1]) * 8
+                        total_weight_mang += 8
+                    if emergency_result.text != '应急处置：不适用':
+                        total_management += float(emergency_result.text.split('：')[-1]) * 6
+                        total_weight_mang += 6
+
+                    total_score = round(
+                        (total_technical / total_weight_tech * 70 + total_management / total_weight_mang * 30), 4)
+                    total_result.set_text(f"总分：{total_score}")
+
+                except Exception as e:
+                    ui.notify(f"计算错误：{str(e)}")
+
+            # 操作按钮区（新增部分）
+            with ui.row().classes("w-full justify-center my-6"):
+                ui.button("开始计算",
+                          icon="calculate",
+                          on_click=calculate_score
+                          ).props("unelevated color=teal").classes("px-8 py-2 text-lg")
+
+            # 结果显示（保持原始变量名）
+            with ui.card().classes("w-full p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg"):
+                with ui.column().classes("space-y-3"):
+                    ui.label("各层得分").classes("text-xl font-bold text-gray-800 mb-4")
+                    physical_result = ui.label("物理层：尚无结果").classes("text-gray-600")
+                    network_result = ui.label("网络层：尚无结果").classes("text-gray-600")
+                    device_result = ui.label("设备层：尚无结果").classes("text-gray-600")
+                    app_result = ui.label("应用层：尚无结果").classes("text-gray-600")
+                    manage_result = ui.label("管理制度：尚无结果").classes("text-gray-600")
+                    personnel_result = ui.label("人员管理：尚无结果").classes("text-gray-600")
+                    construct_result = ui.label("建设运行：尚无结果").classes("text-gray-600")
+                    emergency_result = ui.label("应急处置：尚无结果").classes("text-gray-600")
+                    ui.separator().classes("my-4")
+                    total_result = ui.label("总分：尚无结果").classes("text-2xl font-bold text-blue-800")
+
+            # 说明（保持原始内容）
+            with ui.column().classes("space-y-2 text-sm text-gray-600"):
+                ui.label("注意：本工具基于商用密码应用安全性评估量化评估规则（2023版），计算分数仅用于辅助参考，最终分数以实际手动验算结果为准！").classes("font-medium")
+            ui.separator().classes("mt-8")
+            ui.label("© 2024 Draina's Toolbox | GPL-3.0 license").classes("text-center text-gray-500 text-sm py-2")
 
     # 更新UI函数
     def update_ui(level):
@@ -650,208 +881,6 @@ def score_page():
             emergency_check2.set_value(True)
             emergency_check3.set_text("（应）向有关主管部门上报处置情况")
             emergency_check3.set_value(True)
-
-    # 计算分数函数
-    def calculate_score():
-        try:
-            # 物理层计算
-            physical_score = 0
-            physical_weight = 0
-            if physical_check1.value and physical_input1.value:
-                physical_weight += 0.7 if level_radio.value == '二级系统' else 1
-                physical_score += float(physical_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if physical_check2.value and physical_input2.value:
-                physical_weight += 0.4 if level_radio.value == '二级系统' else 0.7
-                physical_score += float(physical_input2.value) * (0.4 if level_radio.value == '二级系统' else 0.7)
-            if physical_check3.value and physical_input3.value and level_radio.value == '三级系统':
-                physical_weight += 0.7
-                physical_score += float(physical_input3.value) * 0.7
-            physical_result.set_text(f"物理层：{round(physical_score / physical_weight, 4) if physical_weight > 0 else '不适用'}")
-
-            # 网络层计算
-            network_score = 0
-            network_weight = 0
-            if network_check1.value and network_input1.value:
-                network_weight += 0.7 if level_radio.value == '二级系统' else 1
-                network_score += float(network_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if network_check2.value and network_input2.value:
-                network_weight += 0.4 if level_radio.value == '二级系统' else 0.7
-                network_score += float(network_input2.value) * (0.4 if level_radio.value == '二级系统' else 0.7)
-            if network_check3.value and network_input3.value:
-                network_weight += 0.7 if level_radio.value == '二级系统' else 1
-                network_score += float(network_input3.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if network_check4.value and network_input4.value:
-                network_weight += 0.4 if level_radio.value == '二级系统' else 0.4
-                network_score += float(network_input4.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
-            if network_check5.value and network_input5.value and level_radio.value == '三级系统':
-                network_weight += 0.4
-                network_score += float(network_input5.value) * 0.4
-            network_result.set_text(f"网络层：{round(network_score / network_weight, 4) if network_weight > 0 else '不适用'}")
-
-            # 设备层计算
-            device_score = 0
-            device_weight = 0
-            if device_check1.value and device_input1.value:
-                device_weight += 0.7 if level_radio.value == '二级系统' else 1
-                device_score += float(device_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if device_check2.value and device_input2.value and level_radio.value == '三级系统':
-                device_weight += 1
-                device_score += float(device_input2.value) * 1
-            if device_check3.value and device_input3.value:
-                device_weight += 0.4 if level_radio.value == '二级系统' else 0.4
-                device_score += float(device_input3.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
-            if device_check4.value and device_input4.value and level_radio.value == '三级系统':
-                device_weight += 0.4
-                device_score += float(device_input4.value) * 0.4
-            if device_check5.value and device_input5.value:
-                device_weight += 0.4 if level_radio.value == '二级系统' else 0.4
-                device_score += float(device_input5.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
-            if device_check6.value and device_input6.value and level_radio.value == '三级系统':
-                device_weight += 0.7
-                device_score += float(device_input6.value) * 0.7
-            device_result.set_text(f"设备层：{round(device_score / device_weight, 4) if device_weight > 0 else '不适用'}")
-
-            # 应用层计算
-            app_score = 0
-            app_weight = 0
-            if app_check1.value and app_input1.value:
-                app_weight += 0.7 if level_radio.value == '二级系统' else 1
-                app_score += float(app_input1.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if app_check2.value and app_input2.value:
-                app_weight += 0.4 if level_radio.value == '二级系统' else 0.4
-                app_score += float(app_input2.value) * (0.4 if level_radio.value == '二级系统' else 0.4)
-            if app_check3.value and app_input3.value and level_radio.value == '三级系统':
-                app_weight += 0.4
-                app_score += float(app_input3.value) * 0.4
-            if app_check4.value and app_input4.value:
-                app_weight += 0.7 if level_radio.value == '二级系统' else 1
-                app_score += float(app_input4.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if app_check5.value and app_input5.value:
-                app_weight += 0.7 if level_radio.value == '二级系统' else 1
-                app_score += float(app_input5.value) * (0.7 if level_radio.value == '二级系统' else 1)
-            if app_check6.value and app_input6.value:
-                app_weight += 0.7 if level_radio.value == '二级系统' else 0.7
-                app_score += float(app_input6.value) * (0.7 if level_radio.value == '二级系统' else 0.7)
-            if app_check7.value and app_input7.value:
-                app_weight += 0.7 if level_radio.value == '二级系统' else 0.7
-                app_score += float(app_input7.value) * (0.7 if level_radio.value == '二级系统' else 0.7)
-            if app_check8.value and app_input8.value and level_radio.value == '三级系统':
-                app_weight += 1
-                app_score += float(app_input8.value) * 1
-            app_result.set_text(f"应用层：{round(app_score / app_weight, 4) if app_weight > 0 else '不适用'}")
-
-            # 管理制度计算
-            manage_score = 0
-            manage_weight = 0
-            if manage_check1.value and manage_input1.value:
-                manage_weight += 1
-                manage_score += float(manage_input1.value) * 1
-            if manage_check2.value and manage_input2.value:
-                manage_weight += 0.7
-                manage_score += float(manage_input2.value) * 0.7
-            if manage_check3.value and manage_input3.value:
-                manage_weight += 0.7
-                manage_score += float(manage_input3.value) * 0.7
-            if manage_check4.value and manage_input4.value and level_radio.value == '三级系统':
-                manage_weight += 0.7
-                manage_score += float(manage_input4.value) * 0.7
-            if manage_check5.value and manage_input5.value and level_radio.value == '三级系统':
-                manage_weight += 0.7
-                manage_score += float(manage_input5.value) * 0.7
-            if manage_check6.value and manage_input6.value and level_radio.value == '三级系统':
-                manage_weight += 0.7
-                manage_score += float(manage_input6.value) * 0.7
-            manage_result.set_text(f"管理制度：{round(manage_score / manage_weight, 4) if manage_weight > 0 else '不适用'}")
-
-            # 人员管理计算
-            personnel_score = 0
-            personnel_weight = 0
-            if personnel_check1.value and personnel_input1.value:
-                personnel_weight += 0.7
-                personnel_score += float(personnel_input1.value) * 0.7
-            if personnel_check2.value and personnel_input2.value:
-                personnel_weight += 1
-                personnel_score += float(personnel_input2.value) * 1
-            if personnel_check3.value and personnel_input3.value:
-                personnel_weight += 0.7
-                personnel_score += float(personnel_input3.value) * 0.7
-            if personnel_check4.value and personnel_input4.value and level_radio.value == '三级系统':
-                personnel_weight += 0.7
-                personnel_score += float(personnel_input4.value) * 0.7
-            if personnel_check5.value and personnel_input5.value:
-                personnel_weight += 0.7
-                personnel_score += float(personnel_input5.value) * 0.7
-            personnel_result.set_text(f"人员管理：{round(personnel_score / personnel_weight, 4) if personnel_weight > 0 else '不适用'}")
-
-            # 建设运行计算
-            construct_score = 0
-            construct_weight = 0
-            if construct_check1.value and construct_input1.value:
-                construct_weight += 1
-                construct_score += float(construct_input1.value) * 1
-            if construct_check2.value and construct_input2.value:
-                construct_weight += 1
-                construct_score += float(construct_input2.value) * 1
-            if construct_check3.value and construct_input3.value:
-                construct_weight += 0.7
-                construct_score += float(construct_input3.value) * 0.7
-            if construct_check4.value and construct_input4.value:
-                construct_weight += 1
-                construct_score += float(construct_input4.value) * 1
-            if construct_check5.value and construct_input5.value and level_radio.value == '三级系统':
-                construct_weight += 0.7
-                construct_score += float(construct_input5.value) * 0.7
-            construct_result.set_text(f"建设运行：{round(construct_score / construct_weight, 4) if construct_weight > 0 else '不适用'}")
-
-            # 应急处置计算
-            emergency_score = 0
-            emergency_weight = 0
-            if emergency_check1.value and emergency_input1.value:
-                emergency_weight += 1
-                emergency_score += float(emergency_input1.value) * 1
-            if emergency_check2.value and emergency_input2.value and level_radio.value == '三级系统':
-                emergency_weight += 0.7
-                emergency_score += float(emergency_input2.value) * 0.7
-            if emergency_check3.value and emergency_input3.value and level_radio.value == '三级系统':
-                emergency_weight += 0.7
-                emergency_score += float(emergency_input3.value) * 0.7
-            emergency_result.set_text(f"应急处置：{round(emergency_score / emergency_weight, 4) if emergency_weight > 0 else '不适用'}")
-
-            # 总分计算
-            total_technical = 0
-            total_management = 0
-            total_weight_tech = 0
-            total_weight_mang = 0
-            if physical_result.text != '物理层：不适用':
-                total_technical += float(physical_result.text.split('：')[-1]) * 10
-                total_weight_tech += 10
-            if network_result.text != '网络层：不适用':
-                total_technical += float(network_result.text.split('：')[-1]) * 20
-                total_weight_tech += 20
-            if device_result.text != '设备层：不适用':
-                total_technical += float(device_result.text.split('：')[-1]) * 10
-                total_weight_tech += 10
-            if app_result.text != '应用层：不适用':
-                total_technical += float(app_result.text.split('：')[-1]) * 30
-                total_weight_tech += 30
-            if manage_result.text != '管理制度：不适用':
-                total_management += float(manage_result.text.split('：')[-1]) * 8
-                total_weight_mang += 8
-            if personnel_result.text != '人员管理：不适用':
-                total_management += float(personnel_result.text.split('：')[-1]) * 8
-                total_weight_mang += 8
-            if construct_result.text != '建设运行：不适用':
-                total_management += float(construct_result.text.split('：')[-1]) * 8
-                total_weight_mang += 8
-            if emergency_result.text != '应急处置：不适用':
-                total_management += float(emergency_result.text.split('：')[-1]) * 6
-                total_weight_mang += 6
-
-            total_score = round((total_technical/total_weight_tech * 70 + total_management/total_weight_mang * 30) ,4)
-            total_result.set_text(f"总分：{total_score}")
-
-        except Exception as e:
-            ui.notify(f"计算错误：{str(e)}")
 
     # 创建侧边栏
     sidebar_manager.create_sidebar(content)
