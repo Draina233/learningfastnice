@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from nicegui import ui
 import base64
+import json
 
 from nicegui.tailwind_types import content
 
@@ -62,11 +63,11 @@ def home_page():
     with ui.row().classes("w-full h-screen") as page_container:
         # 内容区域
         with ui.column().style(CONTENT_STYLE).classes("w-full h-full"):
-            ui.page_title("Draina的工具箱")
+            ui.page_title("欢迎使用Draina的工具箱")
 
             with ui.column().classes("max-w-7xl mx-auto p-6 w-full h-full gap-4"):
                 # 标题区
-                ui.label("🔧 欢迎来到Draina的工具箱").classes("text-3xl font-bold text-center text-gray-800 mb-2")
+                ui.label("欢迎使用Draina的工具箱🔧").classes("text-2xl font-bold text-center text-gray-800 mb-2")
                 ui.separator().classes("mb-6")
 
                 # 主内容区
@@ -186,16 +187,32 @@ def converter_page():
                 with ui.row().classes("w-full justify-center gap-4 py-4"):
                     convert_btn = ui.button("开始转换", icon="swap_horiz").props("unelevated")
                     clear_btn = ui.button("清空内容", icon="delete").props("flat")
+                    copy_btn = ui.button("复制结果",icon="content_copy").props("flat")
 
                 # 输出区域
                 with ui.card().classes("w-full p-4").style("min-height: 200px;"):
-                    ui.label("转换结果：").classes("text-lg font-medium")
-                    output_area = ui.label().classes("text-sm font-mono break-all").style("width: 100%")
+                    with ui.row().classes("w-full justify-between items-center"):
+                        ui.label("转换结果：").classes("text-lg font-medium")
+
+                    output_area = ui.label().classes("text-sm font-mono break-all w-full")
 
                 # 状态提示
                 status = ui.label().classes("text-sm text-gray-500 px-2")
 
-                # 转换处理函数（修改关键部分）
+                # 复制功能函数
+                def copy_output():
+                    text = output_area.text
+                    if not text:
+                        status.set_text("没有内容可复制")
+                        return
+
+                    try:
+                        ui.run_javascript(f"navigator.clipboard.writeText({json.dumps(text)})")
+                        status.set_text("已复制到剪贴板！")
+                    except Exception as e:
+                        status.set_text(f"复制失败：{str(e)}")
+
+                # 转换处理函数
                 async def convert():
                     try:
                         input_text = input_area.value.strip()
@@ -266,12 +283,15 @@ def converter_page():
 
                 convert_btn.on_click(convert)
                 clear_btn.on_click(clear)
+                copy_btn.on_click(copy_output)
                 # 页脚
                 ui.separator().classes("mt-8")
                 ui.label("© 2024 Draina's Toolbox | GPL-3.0 license").classes("text-center text-gray-500 text-sm py-2")
 
         # 创建侧边栏
         sidebar_manager.create_sidebar(content)
+
+
 
 # 挂载NiceGUI到FastAPI应用
 ui.run_with(
