@@ -1,11 +1,22 @@
+import textwrap
+
+from asn1crypto.keys import PublicKeyInfo
 from fastapi import FastAPI
 from nicegui import ui
 import base64
 import json
-
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 from nicegui.tailwind_types import content
-
 from nicegui import app
+from gmssl.sm3 import sm3_hash
+from asn1crypto import x509 as asn1_x509, pem, core
+from gmssl import sm2
+from asn1crypto.core import ObjectIdentifier
+import base64
+
 
 # 添加静态文件目录（通常默认已配置）
 app.add_static_files('/static', 'static')
@@ -42,7 +53,8 @@ class SidebarManager:
             nav_items = [
                 ("/", "首页", "home"),
                 ("/converter", "编码转换", "swap_horiz"),
-                ("/score", "密评计算", "calculate")
+                ("/score", "密评计算", "calculate"),
+                ("/cert_chain", "证书链验证", "verified_user")
             ]
 
             # 创建导航按钮
@@ -153,7 +165,7 @@ def converter_page():
             ui.page_title("编码转换工具-Draina's Toolbox")
 
             with ui.column().classes("w-full p-4"):
-                ui.label("多格式编码转换工具").classes("text-2xl font-bold mb-4 text-primary")
+                ui.label("多格式编码转换工具").classes("text-2xl font-bold text-gray-800")
 
                 # 转换格式选择
                 with ui.row().classes("w-full items-center gap-4"):
@@ -884,6 +896,319 @@ def score_page():
 
     # 创建侧边栏
     sidebar_manager.create_sidebar(content)
+
+
+def parse_certificate(file_content: bytes) -> dict:
+    """支持国密证书的解析函数"""
+    try:
+        # 尝试用cryptography解析标准证书
+        try:
+            cert = x509.load_der_x509_certificate(file_content, default_backend())
+        except:
+            cert = x509.load_pem_x509_certificate(file_content, default_backend())
+
+        return {
+            'subject': cert.subject.rfc4514_string(),
+            'issuer': cert.issuer.rfc4514_string(),
+            'signature': cert.signature.hex(),
+            'tbs_certificate': cert.tbs_certificate_bytes.hex(),
+            'public_key': cert.public_key().public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            ).decode('utf-8'),
+            'public_key_type': 'standard',
+            'signature_algorithm': cert.signature_algorithm_oid._name
+        }
+    except Exception as e:
+        try:
+            if pem.detect(file_content):
+                header, _, der_bytes = pem.unarmor(file_content)
+            else:
+                der_bytes = file_content
+
+            cert_asn1 = asn1_x509.Certificate.load(der_bytes)
+            signature_value = cert_asn1['signature_value'].native
+
+            public_key_info = cert_asn1['tbs_certificate']['subject_public_key_info']
+            algorithm_oid = public_key_info['algorithm']['algorithm'].native
+            parameters = public_key_info['algorithm']['parameters']
+
+            # SM2的椭圆曲线OID
+            valid_sm2_curve_oids = {
+                '1.2.156.10197.1.301',  # SM2椭圆曲线标准OID
+                '1.2.156.10197.1.501'  # 可能的其他相关OID
+            }
+
+            # 判断逻辑
+            is_sm2 = False
+            if algorithm_oid == 'ec' and parameters is not None:
+                # 提取曲线参数中的OID（asn1crypto的特殊处理）
+                if isinstance(parameters, ObjectIdentifier):
+                    curve_oid = parameters.native
+                    is_sm2 = curve_oid in valid_sm2_curve_oids
+                else:  # 处理parameters是ECParameters对象的情况
+                    curve_oid = parameters.chosen.native
+                    is_sm2 = curve_oid in valid_sm2_curve_oids
+
+            if is_sm2:
+                public_key_bytes = public_key_info['public_key'].native  # 直接获取公钥原始字节
+                public_key_hex = public_key_bytes.hex()  # 转换为16进制字符串
+
+            return {
+                'subject': str(cert_asn1['tbs_certificate']['subject']),
+                'issuer': str(cert_asn1['tbs_certificate']['issuer']),
+                'signature': signature_value.hex(),
+                'tbs_certificate': cert_asn1['tbs_certificate'].dump().hex(),
+                'public_key': public_key_hex if is_sm2 else '（非SM2公钥格式）',
+                'public_key_type': 'sm2' if is_sm2 else 'unknown',
+                'signature_algorithm': cert_asn1['signature_algorithm'].native
+            }
+        except Exception as e:
+            raise ValueError(f"证书解析失败: {str(e)}")
+
+
+async def verify_signature(cert_a: bytes, cert_b: bytes) -> str:
+    """支持国密算法的验证函数"""
+    # 解析证书信息
+    cert1_info = parse_certificate(cert_a)
+    cert2_info = parse_certificate(cert_b)
+
+    # ========== SM2验证流程 ==========
+    def try_sm2_verify(pub_key_pem: str, tbs_hex: str, sig_hex: str) -> bool:
+        """尝试执行SM2验证的通用方法"""
+        try:
+            # 解析公钥PEM
+            der_bytes = base64.b64decode(pub_key_pem.split('-----')[2].replace('\n', ''))
+            pub_key_info = PublicKeyInfo.load(der_bytes)
+
+            # 提取原始公钥字节（处理04前缀）
+            raw_pubkey = pub_key_info['public_key'].native
+            if len(raw_pubkey) == 65 and raw_pubkey[0] == 0x04:  # 包含压缩标识
+                pubkey = raw_pubkey[1:]  # 去掉04前缀
+            else:
+                pubkey = raw_pubkey
+
+            # 初始化SM2实例
+            sm2_public = sm2.CryptSM2(public_key=pubkey)
+
+            # 准备数据和签名
+            tbs_data = bytes.fromhex(tbs_hex)
+            signature_der = bytes.fromhex(sig_hex)
+
+            # 解析DER格式签名
+            parsed_sig = core.Asn1Value.load(signature_der)
+            r, s = parsed_sig.native
+            signature = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
+
+            # 计算SM3哈希
+            tbs_hash = sm3_hash(tbs_data)
+
+            return sm2_public.verify(signature, tbs_hash)
+        except Exception as e:
+            print(f"SM2验证错误: {str(e)}")
+            return False
+
+    # 尝试用A的公钥验证B的签名
+    if cert1_info['public_key_type'] == 'sm2' and 'sm3' in cert2_info['signature_algorithm']:
+        if try_sm2_verify(
+                pub_key_pem=cert1_info['public_key'],
+                tbs_hex=cert2_info['tbs_certificate'],
+                sig_hex=cert2_info['signature']
+        ):
+            return "证书A 签发了 证书B"
+
+    # 尝试用B的公钥验证A的签名
+    if cert2_info['public_key_type'] == 'sm2' and 'sm3' in cert1_info['signature_algorithm']:
+        if try_sm2_verify(
+                pub_key_pem=cert2_info['public_key'],
+                tbs_hex=cert1_info['tbs_certificate'],
+                sig_hex=cert1_info['signature']
+        ):
+            return "证书B 签发了 证书A"
+
+    # ========== 标准证书验证 ==========
+    try:
+        # 尝试加载证书
+        def load_cert(data: bytes):
+            try:
+                return x509.load_der_x509_certificate(data, default_backend())
+            except:
+                return x509.load_pem_x509_certificate(data, default_backend())
+
+        cert1 = load_cert(cert_a)
+        cert2 = load_cert(cert_b)
+
+        # 尝试用A的公钥验证B的签名
+        try:
+            cert1.public_key().verify(
+                cert2.signature,
+                cert2.tbs_certificate_bytes,
+                padding.PKCS1v15(),
+                cert2.signature_hash_algorithm
+            )
+            return "证书A 签发了 证书B"
+        except Exception as e:
+            pass
+
+        # 尝试用B的公钥验证A的签名
+        try:
+            cert2.public_key().verify(
+                cert1.signature,
+                cert1.tbs_certificate_bytes,
+                padding.PKCS1v15(),
+                cert1.signature_hash_algorithm
+            )
+            return "证书B 签发了 证书A"
+        except Exception as e:
+            pass
+    except Exception as e:
+        print(f"标准证书验证错误: {str(e)}")
+
+    return "未验证到证书签发关系"
+
+
+# 证书链验证页面
+@ui.page('/cert_chain')
+def cert_chain_page():
+    with ui.row().classes("w-full h-screen") as page_container:
+        # 将主内容区域与侧边栏分开
+        with ui.column().style(CONTENT_STYLE).classes("w-full h-full lg:w-[calc(100%-300px)]"):
+            ui.page_title("证书链验证-Draina's Toolbox")
+
+            # 使用二进制数据存储证书内容
+            cert_a_content = None
+            cert_b_content = None
+
+            with ui.column().classes("w-full p-6 gap-4"):
+                # 标题
+                ui.label("证书链验证工具").classes("text-2xl font-bold text-center text-gray-800 mb-4")
+                ui.separator().classes("mb-6")
+
+                # 修复后的文件上传区域
+                with ui.card().classes("w-full p-4 shadow-lg"):
+                    ui.label("请选择要验证的两个证书文件（.cer格式）").classes("font-bold text-lg mb-4")
+                    with ui.grid(columns=2).classes("w-full gap-4"):
+                        upload_a = ui.upload(
+                            label="选择证书A",
+                            auto_upload=True,
+                            on_upload=lambda e: handle_upload(e, 'a'),
+                        ).props('accept=.cer')
+                        upload_b = ui.upload(
+                            label="选择证书B",
+                            auto_upload=True,
+                            on_upload=lambda e: handle_upload(e, 'b'),
+                        ).props('accept=.cer')
+
+                # 操作按钮
+                with ui.row().classes("w-full justify-center gap-4 py-4"):
+                    verify_btn = ui.button("开始验证", icon="verified").props("unelevated")
+                    clear_btn = ui.button("清空文件", icon="delete").props("flat")
+
+                # 验证结果展示
+                result_card = ui.card().classes("w-full p-4 shadow-lg").style("display: none")
+                with result_card:
+                    ui.label("验证结果").classes("text-xl font-bold text-primary mb-2")
+                    result_label = ui.label().classes("text-lg font-medium")
+                    ui.separator().classes("my-4")
+                    with ui.tabs().classes("w-full") as tabs:
+                        cert_a_tab = ui.tab('证书A信息')
+                        cert_b_tab = ui.tab('证书B信息')
+                    with ui.tab_panels(tabs, value=cert_a_tab).classes("w-full"):
+                        with ui.tab_panel(cert_a_tab):
+                            a_info = ui.column()
+                        with ui.tab_panel(cert_b_tab):
+                            b_info = ui.column()
+
+                # 状态显示
+                status = ui.label().classes("text-sm text-gray-500 px-2")
+
+                # 修复后的文件处理函数
+                def handle_upload(upload_event, cert_type):
+                    nonlocal cert_a_content, cert_b_content
+                    try:
+                        # 正确读取文件内容的方法
+                        upload_event.content.seek(0)  # 重置文件指针
+                        content = upload_event.content.read()  # 读取字节数据
+
+                        if cert_type == 'a':
+                            cert_a_content = content
+                            ui.notify(f"证书A已上传: {upload_event.name}")
+                        else:
+                            cert_b_content = content
+                            ui.notify(f"证书B已上传: {upload_event.name}")
+                    except Exception as e:
+                        ui.notify(f"文件读取失败: {str(e)}", type='negative')
+                    finally:
+                        upload_event.content.close()  # 关闭临时文件
+
+                async def start_verify():
+                    nonlocal cert_a_content, cert_b_content
+                    if not cert_a_content or not cert_b_content:
+                        ui.notify("请先上传两个证书文件", type='negative')
+                        return
+
+                    try:
+                        # 验证签名
+                        result = await verify_signature(cert_a_content, cert_b_content)
+                        result_label.set_text(result)
+                        result_card.style("display: block")
+
+                        # 解析证书信息
+                        cert_a_info = parse_certificate(cert_a_content)
+                        cert_b_info = parse_certificate(cert_b_content)
+
+                        # 显示证书详情
+                        def build_info_panel(info: dict):
+                            public_key = info.get('public_key', '') or ''  # 确保始终是字符串
+                            return [
+                                ui.markdown(f"**颁发者**: `{info['issuer']}`").classes("break-words"),
+                                ui.markdown(f"**颁发给**: `{info['subject']}`").classes("break-words"),
+                                ui.separator(),
+                                ui.markdown("**签名值**: ").classes("break-words"),
+                                ui.markdown(info['signature']).classes("w-full break-words max-h-40 overflow-auto"),
+                                ui.markdown("**签名原文(TBSCertificate)**: ").classes("break-words"),
+                                ui.markdown(info['tbs_certificate']).classes(
+                                    "w-full break-words max-h-40 overflow-auto"),
+                                ui.markdown("**公钥信息**: ").classes("break-words"),
+                                ui.markdown(public_key.strip()).classes("w-full break-words max-h-40 overflow-auto")
+                                # 处理空值
+                            ]
+
+                        # 清除并更新证书信息
+                        a_info.clear()
+                        with a_info.classes("w-full max-w-full overflow-auto"):
+                            build_info_panel(cert_a_info)
+
+                        b_info.clear()
+                        with b_info.classes("w-full max-w-full overflow-auto"):
+                            build_info_panel(cert_b_info)
+
+                        status.set_text("验证完成")
+                    except Exception as e:
+                        status.set_text(f"错误：{str(e)}")
+                        result_card.style("display: none")
+                        ui.notify("证书解析失败，请检查文件格式", type='negative')
+
+                def clear_files():
+                    nonlocal cert_a_content, cert_b_content
+                    upload_a.reset()
+                    upload_b.reset()
+                    cert_a_content = None
+                    cert_b_content = None
+                    result_card.style("display: none")
+                    a_info.clear()
+                    b_info.clear()
+                    status.set_text("已重置")
+
+                verify_btn.on_click(start_verify)
+                clear_btn.on_click(clear_files)
+
+                # 页脚
+                ui.separator().classes("mt-8")
+                ui.label("© 2024 Draina's Toolbox | GPL-3.0 license").classes("text-center text-gray-500 text-sm py-2")
+
+        # 创建侧边栏（假设这是单独的模块）
+        sidebar_manager.create_sidebar(content)
 
 
 
