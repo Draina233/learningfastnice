@@ -1,7 +1,9 @@
 import textwrap
+from binascii import unhexlify
 
 from asn1crypto.keys import PublicKeyInfo
 from fastapi import FastAPI
+from gmssl.sm2 import CryptSM2
 from nicegui import ui
 import base64
 import json
@@ -975,41 +977,36 @@ async def verify_signature(cert_a: bytes, cert_b: bytes) -> str:
 
     # ========== SM2验证流程 ==========
     def try_sm2_verify(pub_key_pem: str, tbs_hex: str, sig_hex: str) -> bool:
-        """尝试执行SM2验证的通用方法"""
         try:
-            # 解析公钥PEM
-            der_bytes = base64.b64decode(pub_key_pem.split('-----')[2].replace('\n', ''))
-            pub_key_info = PublicKeyInfo.load(der_bytes)
+            # 处理公钥格式：去除PEM头尾标识及换行符，提取裸公钥
+            public_key = pub_key_pem.strip()
+            if public_key.startswith("04"):  # 未压缩公钥标识
+                public_key = public_key[2:]
 
-            # 提取原始公钥字节（处理04前缀）
-            raw_pubkey = pub_key_info['public_key'].native
-            if len(raw_pubkey) == 65 and raw_pubkey[0] == 0x04:  # 包含压缩标识
-                pubkey = raw_pubkey[1:]  # 去掉04前缀
-            else:
-                pubkey = raw_pubkey
+            # 将公钥转换为字节
+            public_key_bytes = bytes.fromhex(public_key)
 
-            # 初始化SM2实例
-            sm2_public = sm2.CryptSM2(public_key=pubkey)
+            # 初始化SM2实例（私钥传空，仅用公钥验签）
+            sm2_public = sm2.CryptSM2(
+                public_key=public_key_bytes,
+                private_key=""
+            )
 
-            # 准备数据和签名
-            tbs_data = bytes.fromhex(tbs_hex)
-            signature_der = bytes.fromhex(sig_hex)
+            # 将签名原文转换为字节
+            tbs_bytes = unhexlify(tbs_hex)
 
-            # 解析DER格式签名
-            parsed_sig = core.Asn1Value.load(signature_der)
-            r, s = parsed_sig.native
-            signature = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
+            # 转换签名值为字节
+            signature = unhexlify(sig_hex)
 
-            # 计算SM3哈希
-            tbs_hash = sm3_hash(tbs_data)
+            # 执行验签（自动处理Z值计算）
+            return sm2_public.verify(signature, tbs_bytes)
 
-            return sm2_public.verify(signature, tbs_hash)
         except Exception as e:
             print(f"SM2验证错误: {str(e)}")
             return False
 
     # 尝试用A的公钥验证B的签名
-    if cert1_info['public_key_type'] == 'sm2' and 'sm3' in cert2_info['signature_algorithm']:
+    if cert1_info['public_key_type'] == 'sm2':
         if try_sm2_verify(
                 pub_key_pem=cert1_info['public_key'],
                 tbs_hex=cert2_info['tbs_certificate'],
@@ -1018,7 +1015,7 @@ async def verify_signature(cert_a: bytes, cert_b: bytes) -> str:
             return "证书A 签发了 证书B"
 
     # 尝试用B的公钥验证A的签名
-    if cert2_info['public_key_type'] == 'sm2' and 'sm3' in cert1_info['signature_algorithm']:
+    if cert2_info['public_key_type'] == 'sm2':
         if try_sm2_verify(
                 pub_key_pem=cert2_info['public_key'],
                 tbs_hex=cert1_info['tbs_certificate'],
