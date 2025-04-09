@@ -18,13 +18,22 @@ from asn1crypto import x509 as asn1_x509, pem, core
 from gmssl import sm2
 from asn1crypto.core import ObjectIdentifier
 import base64
-
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+import os
 
 # 添加静态文件目录（通常默认已配置）
 app.add_static_files('/static', 'static')
 
+
 # 创建FastAPI应用
 fastapi_app = FastAPI()
+
+# 添加 favicon 路由
+@fastapi_app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    # 确保 favicon.ico 文件在项目根目录下
+    return FileResponse('static/favicon.ico')
 
 # 样式定义
 SIDEBAR_STYLE = """
@@ -56,7 +65,8 @@ class SidebarManager:
                 ("/", "首页", "home"),
                 ("/converter", "编码转换", "swap_horiz"),
                 ("/score", "密评计算", "calculate"),
-                ("/cert_chain", "证书链验证", "verified_user")
+                #("/cert_chain", "证书链验证", "verified_user"),
+                #("/sm2_verify", "SM2验签", "vpn_key")
             ]
 
             # 创建导航按钮
@@ -97,7 +107,7 @@ def home_page():
                                 🛠️ ​**实用工具** - 聚焦开发实用功能  
                                 🧩 ​**模块设计** - 功能相互独立，按需使用  
                                 🎉 ​**来访人次** 
-                                ![learntoolweb](https://count.getloli.com/@learntoolweb?name=learntoolweb&theme=booru-lewd&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+                                ![learntoolweb](https://count.littlebell.top/@learntoolweb?name=learntoolweb&theme=booru-lewd&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
                             ''').classes("text-lg text-gray-700")
 
                             ui.separator().classes("my-4")
@@ -106,15 +116,14 @@ def home_page():
                                 with ui.card().classes("p-4 bg-orange-50 rounded-lg shadow"):
                                     ui.label("📢 最新公告").classes("font-bold text-orange-800")
                                     ui.markdown('''
-                                        ​**2024.03.20**   
-                                        - 新增编码转换工具  
-                                        - 优化移动端显示
+                                        - ​**2025.04.03**   
+                                        - 初次上线 
                                     ''')
                                 with ui.card().classes("p-4 bg-white rounded-lg shadow"):
                                     ui.label("🛠️ 开发中功能").classes("font-bold text-blue-600")
-                                    ui.markdown('''
-                                        - 密评分数计算器  
+                                    ui.markdown(''' 
                                         - 证书链验证
+                                        - SM2签名验签
                                         - 抓包文件分析
                                     ''')
 
@@ -1208,12 +1217,137 @@ def cert_chain_page():
         sidebar_manager.create_sidebar(content)
 
 
+@ui.page('/sm2_verify')
+def sm2_verify_page():
+    with ui.row().classes("w-full") as page_container:
+        # 内容区域
+        with ui.column().style(CONTENT_STYLE).classes("w-full") as content:
+            ui.page_title("SM2验签工具-Draina's Toolbox")
+
+            with ui.column().classes("w-full p-4"):
+                ui.label("SM2验签工具").classes("text-2xl font-bold text-gray-800")
+
+                # 输入区域
+                signature_input = ui.textarea(label="签名值（十六进制，DER格式）").classes(
+                    "w-full font-mono text-sm").props("""
+                    outlined dense
+                    rows=3
+                """)
+
+                original_input = ui.textarea(label="签名原文（十六进制）").classes("w-full font-mono text-sm").props("""
+                    outlined dense
+                    rows=6
+                """)
+
+                public_key_input = ui.textarea(label="公钥（十六进制，以04开头）").classes(
+                    "w-full font-mono text-sm").props("""
+                    outlined dense
+                    rows=3
+                """)
+
+                # 操作按钮
+                with ui.row().classes("w-full justify-center gap-4 py-4"):
+                    verify_btn = ui.button("开始验签", icon="vpn_key").props("unelevated color=teal")
+                    clear_btn = ui.button("清空", icon="delete").props("flat")
+
+                # 输出区域
+                result_area = ui.markdown().classes("w-full p-4 text-lg")
+                status = ui.label().classes("text-sm text-gray-500 px-2")
+
+                def der_decode_signature(der_signature: bytes) -> bytes:
+                    """解析DER格式的SM2签名为原始r+s格式"""
+                    from asn1crypto.core import Sequence, Integer
+
+                    class SM2Signature(Sequence):
+                        _fields = [
+                            ('r', Integer),
+                            ('s', Integer),
+                        ]
+
+                    try:
+                        sig = SM2Signature.load(der_signature)
+                        r = sig['r'].native  # 直接获取整数
+                        s = sig['s'].native
+
+                        # 确保 r 和 s 固定为32字节（补前导零）
+                        r_bytes = r.to_bytes(32, 'big')  # 无 lstrip 操作
+                        s_bytes = s.to_bytes(32, 'big')
+
+                        return r_bytes + s_bytes
+                    except Exception as e:
+                        raise ValueError(f"签名解析失败: {str(e)}")
+
+                def verify_signature():
+                    try:
+                        # 获取并清理输入
+                        signature_hex = signature_input.value.strip().replace(' ', '').replace('\n', '')
+                        original_hex = original_input.value.strip().replace(' ', '').replace('\n', '')
+                        public_key_hex = public_key_input.value.strip().replace(' ', '').replace('\n', '')
+
+                        # 校验基础输入
+                        if not all([signature_hex, original_hex, public_key_hex]):
+                            status.set_text("请输入完整的签名值、原文和公钥")
+                            result_area.set_content("")
+                            return
+
+                        # 校验公钥格式（保持十六进制字符串）
+                        if len(public_key_hex) != 130 or not public_key_hex.startswith('04'):
+                            raise ValueError("公钥格式错误，应为以04开头的130位十六进制字符串")
+
+                        # 转换输入数据
+                        signature_der = bytes.fromhex(signature_hex)
+                        original_data = bytes.fromhex(original_hex)
+
+                        # 解析DER签名
+                        raw_signature = der_decode_signature(signature_der)
+
+                        # 初始化SM2实例（使用十六进制字符串公钥）
+                        crypt_sm2 = CryptSM2(public_key=public_key_hex, private_key=None)
+
+                        # 执行验签
+                        result = crypt_sm2.verify(raw_signature, original_data)
+
+                        # 显示结果
+                        if result:
+                            result_area.set_content("**验签结果：​** <span style='color: green;'>成功</span>")
+                            status.set_text("验签成功！")
+                        else:
+                            result_area.set_content("**验签结果：​** <span style='color: red;'>失败</span>")
+                            status.set_text("验签失败，签名无效")
+
+                    except ValueError as ve:
+                        status.set_text(f"输入错误：{str(ve)}")
+                        result_area.set_content("")
+                    except Exception as e:
+                        status.set_text(f"验签错误：{str(e)}")
+                        result_area.set_content("")
+
+                def clear_inputs():
+                    signature_input.set_value("")
+                    original_input.set_value("")
+                    public_key_input.set_value("")
+                    result_area.set_content("")
+                    status.set_text("已清空输入")
+
+                verify_btn.on_click(verify_signature)
+                clear_btn.on_click(clear_inputs)
+
+                # 页脚
+                ui.separator().classes("mt-8")
+                ui.label("© 2024 Draina's Toolbox | GPL-3.0 license").classes("text-center text-gray-500 text-sm py-2")
+
+        # 创建侧边栏
+        sidebar_manager.create_sidebar(content)
+
+
+
 
 # 挂载NiceGUI到FastAPI应用
 ui.run_with(
     fastapi_app,
     mount_path='/',
-    show_welcome_message=False
+    show_welcome_message=False,
+    favicon="/static/favicon.ico"
 )
 
 if __name__ == "__main__":
