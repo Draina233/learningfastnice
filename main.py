@@ -21,6 +21,7 @@ import base64
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 import os
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 # 添加静态文件目录（通常默认已配置）
 app.add_static_files('/static', 'static')
@@ -28,6 +29,7 @@ app.add_static_files('/static', 'static')
 
 # 创建FastAPI应用
 fastapi_app = FastAPI()
+fastapi_app.add_middleware(HTTPSRedirectMiddleware)
 
 # 添加 favicon 路由
 @fastapi_app.get('/favicon.ico', include_in_schema=False)
@@ -1340,14 +1342,13 @@ def sm2_verify_page():
         sidebar_manager.create_sidebar(content)
 
 
-
-
 # 挂载NiceGUI到FastAPI应用
 ui.run_with(
     fastapi_app,
     mount_path='/',
     show_welcome_message=False,
-    favicon="/static/favicon.ico"
+    favicon="/static/favicon.ico",
+    on_air=False,
 )
 
 if __name__ == "__main__":
